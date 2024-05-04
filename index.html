@@ -22,13 +22,24 @@
     <script>
         const contractAddress = 'YOUR_CONTRACT_ADDRESS';
         const abi = YOUR_CONTRACT_ABI;
-        const web3 = new Web3(Web3.givenProvider || 'http://localhost:8545'); // Use Infura or your local node URL
+        let web3;
 
-        const contract = new web3.eth.Contract(abi, contractAddress);
+        async function init() {
+            // Check if MetaMask is installed
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.enable(); // Request access to user's accounts
+            } else {
+                alert('MetaMask extension not detected. Please install MetaMask to use this feature.');
+            }
+        }
 
         async function getScheduleDetails() {
+            await init(); // Initialize MetaMask
+            const accounts = await web3.eth.getAccounts();
             const scheduleId = document.getElementById('scheduleId').value;
-            const result = await contract.methods.getScheduleDetails(scheduleId).call();
+            const contract = new web3.eth.Contract(abi, contractAddress);
+            const result = await contract.methods.getScheduleDetails(scheduleId).call({ from: accounts[0] });
             document.getElementById('scheduleDetails').innerHTML = `<p>Bus ID: ${result[0]}</p>
                                                                     <p>Start Destination: ${result[1]}</p>
                                                                     <p>End Destination: ${result[2]}</p>
@@ -41,11 +52,16 @@
         }
 
         async function issueTicket() {
+            await init(); // Initialize MetaMask
+            const accounts = await web3.eth.getAccounts();
             const scheduleId = document.getElementById('scheduleId').value;
             const seatNumber = document.getElementById('seatNumber').value;
-            await contract.methods.issueTicket(scheduleId, seatNumber).send({ from: web3.eth.defaultAccount });
+            const contract = new web3.eth.Contract(abi, contractAddress);
+            await contract.methods.issueTicket(scheduleId, seatNumber).send({ from: accounts[0] });
             document.getElementById('ticketIssued').innerHTML = `<p>Ticket issued successfully!</p>`;
         }
+
+        init(); // Initialize MetaMask on page load
     </script>
 </body>
 </html>
