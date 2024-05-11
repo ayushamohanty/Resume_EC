@@ -7,505 +7,65 @@
 </head>
 <body>
     <h1>Bus Management System</h1>
+
+    <!-- Add Bus Schedule Form -->
+    <h2>Add Bus Schedule</h2>
+    <label for="busId">Bus ID:</label>
+    <input type="text" id="busId"><br>
+    <label for="startDestination">Start Destination:</label>
+    <input type="text" id="startDestination"><br>
+    <label for="endDestination">End Destination:</label>
+    <input type="text" id="endDestination"><br>
+    <label for="startTime">Start Time:</label>
+    <input type="number" id="startTime"><br>
+    <label for="endTime">End Time:</label>
+    <input type="number" id="endTime"><br>
+    <label for="availableSeats">Available Seats:</label>
+    <input type="number" id="availableSeats"><br>
+    <label for="ticketPrice">Ticket Price:</label>
+    <input type="number" id="ticketPrice"><br>
+    <button onclick="addBusSchedule()">Add Bus Schedule</button>
+
+    <!-- Schedule Details -->
+    <h2>Schedule Details</h2>
     <label for="scheduleId">Enter Schedule ID:</label>
     <input type="number" id="scheduleId">
     <button onclick="getScheduleDetails()">Get Schedule Details</button>
     <div id="scheduleDetails"></div>
 
+    <!-- Issue Ticket -->
     <h2>Issue Ticket</h2>
-    <label for="seatNumber">Enter Seat Number:</label>
-    <input type="number" id="seatNumber">
+    <label for="issueScheduleId">Schedule ID:</label>
+    <input type="number" id="issueScheduleId"><br>
+    <label for="seatNumber">Seat Number:</label>
+    <input type="number" id="seatNumber"><br>
     <button onclick="issueTicket()">Issue Ticket</button>
     <div id="ticketIssued"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
     <script>
-        const contractAddress = 'BusManagementSystem'; // Replace with your contract address
-        const abi = [[
-	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "busId",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "startDestination",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "endDestination",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "startTime",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "endTime",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "availableSeats",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "ticketPrice",
-				"type": "uint256"
-			}
-		],
-		"name": "BusScheduleAdded",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "newDropLocation",
-				"type": "string"
-			}
-		],
-		"name": "DropLocationChanged",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "newDestination",
-				"type": "string"
-			}
-		],
-		"name": "FinalDestinationChanged",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			}
-		],
-		"name": "SecurityEnabled",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "isActive",
-				"type": "bool"
-			}
-		],
-		"name": "StatusUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "passenger",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "seatNumber",
-				"type": "uint256"
-			}
-		],
-		"name": "TicketIssued",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "busId",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "startDestination",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "endDestination",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "startTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "endTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "availableSeats",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "ticketPrice",
-				"type": "uint256"
-			}
-		],
-		"name": "addBusSchedule",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "busSchedules",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "busId",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "startDestination",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "endDestination",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "startTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "endTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "availableSeats",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "ticketPrice",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "isActive",
-				"type": "bool"
-			},
-			{
-				"internalType": "bool",
-				"name": "securityEnabled",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "newDropLocation",
-				"type": "string"
-			}
-		],
-		"name": "changeDropLocation",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "newDestination",
-				"type": "string"
-			}
-		],
-		"name": "changeFinalDestination",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			}
-		],
-		"name": "disableSecurity",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			}
-		],
-		"name": "enableSecurity",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "seatNumber",
-				"type": "uint256"
-			}
-		],
-		"name": "getPassengerSeat",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			}
-		],
-		"name": "getScheduleDetails",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			},
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "seatNumber",
-				"type": "uint256"
-			}
-		],
-		"name": "issueTicket",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "scheduleCounter",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "scheduleId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "newStatus",
-				"type": "bool"
-			}
-		],
-		"name": "updateStatus",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	}
-]]; // Replace with your contract ABI
+        const contractAddress = 'CONTRACT_ADDRESS'; // Replace with your contract address
+        const abi = [YOUR_CONTRACT_ABI]; // Replace with your contract ABI
+        const web3 = new Web3('https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID'); // Replace with your Infura project ID
 
-        let web3;
-
-        async function init() {
-            // Check if MetaMask is installed
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                await window.ethereum.enable(); // Request access to user's accounts
-            } else {
-                alert('MetaMask extension not detected. Please install MetaMask to use this feature.');
-            }
+        async function addBusSchedule() {
+            const accounts = await web3.eth.getAccounts();
+            const contract = new web3.eth.Contract(abi, contractAddress);
+            const busId = document.getElementById('busId').value;
+            const startDestination = document.getElementById('startDestination').value;
+            const endDestination = document.getElementById('endDestination').value;
+            const startTime = parseInt(document.getElementById('startTime').value);
+            const endTime = parseInt(document.getElementById('endTime').value);
+            const availableSeats = parseInt(document.getElementById('availableSeats').value);
+            const ticketPrice = parseInt(document.getElementById('ticketPrice').value);
+            await contract.methods.addBusSchedule(busId, startDestination, endDestination, startTime, endTime, availableSeats, ticketPrice).send({ from: accounts[0] });
+            alert('Bus schedule added successfully!');
         }
 
         async function getScheduleDetails() {
-            await init(); // Initialize MetaMask
-            const accounts = await web3.eth.getAccounts();
-            const scheduleId = document.getElementById('scheduleId').value;
+            const scheduleId = parseInt(document.getElementById('scheduleId').value);
             const contract = new web3.eth.Contract(abi, contractAddress);
-            const result = await contract.methods.getScheduleDetails(scheduleId).call({ from: accounts[0] });
+            const result = await contract.methods.getScheduleDetails(scheduleId).call();
             document.getElementById('scheduleDetails').innerHTML = `<p>Bus ID: ${result[0]}</p>
                                                                     <p>Start Destination: ${result[1]}</p>
                                                                     <p>End Destination: ${result[2]}</p>
@@ -518,16 +78,13 @@
         }
 
         async function issueTicket() {
-            await init(); // Initialize MetaMask
             const accounts = await web3.eth.getAccounts();
-            const scheduleId = document.getElementById('scheduleId').value;
-            const seatNumber = document.getElementById('seatNumber').value;
+            const scheduleId = parseInt(document.getElementById('issueScheduleId').value);
+            const seatNumber = parseInt(document.getElementById('seatNumber').value);
             const contract = new web3.eth.Contract(abi, contractAddress);
             await contract.methods.issueTicket(scheduleId, seatNumber).send({ from: accounts[0] });
-            document.getElementById('ticketIssued').innerHTML = `<p>Ticket issued successfully!</p>`;
+            alert('Ticket issued successfully!');
         }
-
-        init(); // Initialize MetaMask on page load
     </script>
 </body>
 </html>
