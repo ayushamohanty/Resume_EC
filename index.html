@@ -523,20 +523,7 @@
             }
         }
 
-        async function addBusSchedule() {
-            await init();
-            const accounts = await web3.eth.getAccounts();
-            const contract = new web3.eth.Contract(abi, contractAddress);
-            const busId = document.getElementById('busId').value;
-            const startDestination = document.getElementById('startDestination').value;
-            const endDestination = document.getElementById('endDestination').value;
-            const startTime = parseInt(document.getElementById('startTime').value);
-            const endTime = parseInt(document.getElementById('endTime').value);
-            const availableSeats = parseInt(document.getElementById('availableSeats').value);
-            const ticketPrice = parseInt(document.getElementById('ticketPrice').value);
-            await contract.methods.addBusSchedule(busId, startDestination, endDestination, startTime, endTime, availableSeats, ticketPrice).send({ from: accounts[0] });
-            alert('Bus schedule added successfully!');
-        }
+
 
         async function getScheduleDetails() {
             await init();
