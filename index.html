@@ -20,8 +20,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
     <script>
-        const contractAddress = 'BusManagementSystem';
-        const abi = YOUR_CONTRACT_ABI;
+        const contractAddress = 'CONTRACT_ADDRESS'; // Replace with your contract address
+        const abi = [YOUR_CONTRACT_ABI]; // Replace with your contract ABI
+
         let web3;
 
         async function init() {
@@ -43,8 +44,8 @@
             document.getElementById('scheduleDetails').innerHTML = `<p>Bus ID: ${result[0]}</p>
                                                                     <p>Start Destination: ${result[1]}</p>
                                                                     <p>End Destination: ${result[2]}</p>
-                                                                    <p>Start Time: ${result[3]}</p>
-                                                                    <p>End Time: ${result[4]}</p>
+                                                                    <p>Start Time: ${new Date(result[3] * 1000)}</p>
+                                                                    <p>End Time: ${new Date(result[4] * 1000)}</p>
                                                                     <p>Available Seats: ${result[5]}</p>
                                                                     <p>Ticket Price: ${result[6]}</p>
                                                                     <p>Active: ${result[7]}</p>
